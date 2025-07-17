@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fond du Lac, Wi - Terminal</title>
+  <style>
+body {
+  background-color: #000;
+  color: #0f0;
+  font-family: 'Courier New', Courier, monospace;
+  padding: 20px;
+  margin: 0;
+}
+
+#terminal {
+  white-space: pre-wrap;
+  max-height: 80vh;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #000;
+  box-sizing: border-box;
+}
+
+.media-container {
+  margin: 15px 0;
+}
+
+.media-label {
+  margin-bottom: 5px;
+}
+
+video, audio {
+  display: block;
+  max-width: 720px;
+  width: 100%;
+  background: black;
+  margin-top: 5px;
+}
+
+img {
+  display: block;
+  max-width: 25%;
+  border: 1px solid #555;
+  margin-top: 5px;
+}
+
+a {
+  color: #0f0;
+  text-decoration: underline;
+  margin-top: 10px;
+  display: inline-block;
+}
+
+/* New fake terminal input line */
+#input-line {
+  display: flex;
+  align-items: center;
+  font-family: 'Courier New', Courier, monospace;
+  color: #0f0;
+  position: relative;
+  margin-top: 10px;
+}
+
+#prompt-prefix {
+  margin-right: 10px;
+  color: #0f0;
+}
+
+#fake-input {
+  position: absolute;
+  left: calc(12ch); /* Adjust if prompt text changes */
+  display: flex;
+  pointer-events: none;
+  color: #0f0;
+  font-family: inherit;
+  font-size: 1em;
+}
+
+#input-text {
+  white-space: pre;
+}
+
+#blinking-cursor {
+  animation: blink 1s step-start infinite;
+  color: #0f0;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Real input is invisible but still present for typing */
+#command {
+  background: transparent;
+  border: none;
+  color: transparent;
+  caret-color: transparent;
+  font-family: inherit;
+  font-size: 1em;
+  width: 100%;
+  outline: none;
+  position: relative;
+  z-index: 1;
+}
+
+#back-button {
+    display: none;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    /* your other styles here */
+    z-index: 9999;
+    padding: 10px 15px;
+    background-color: black;
+    color: white;
+    border: 1px solid white;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    font-family: 'Courier New', Courier, monospace;
+  }
+  body:hover #back-button {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+  </style>
+</head>
+<body>
+  <div id="progress-container" style="
+  width: 100%; 
+  background: #222; 
+  height: 20px; 
+  border-radius: 10px; 
+  margin-bottom: 10px;
+  overflow: hidden;
+  border: 1px solid #0f0;
+">
+  <div id="progress-bar" style="
+    height: 100%; 
+    width: 0%; 
+    background: #0f0; 
+    border-radius: 10px 0 0 10px;
+    transition: width 0.5s ease-in-out;
+  "></div>
+</div>
+<div id="progress-text" style="
+  color: #0f0; 
+  font-family: monospace; 
+  margin-bottom: 10px;
+">Progress: 0%</div>
+
+  <div id="terminal"></div>
+  <!--<input id="command" autocomplete="off" autofocus />-->
+  <div id="input-line">
+    <span id="prompt-prefix">user@fdlwi:$</span>
+    <div id="fake-input">
+      <span id="input-text"></span><span id="blinking-cursor">█</span>
+    </div>
+    <input id="command" autocomplete="off" autofocus />
+  </div>
+  
+  <button id="back-button" style="
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 9999;
+  padding: 10px 15px;
+  background-color: black;
+  color:  #0f0;
+  border: 1px solid  #0f0;
+  cursor: pointer;
+  box-sizing: border-box;
+  height: 50px;
+  min-width: 120px;
+">
+  ⬅ Back
+</button>
+
+  <script>
+    const terminal = document.getElementById("terminal");
+    const commandInput = document.getElementById("command");
+    const inputText = document.getElementById("input-text");
+
+commandInput.addEventListener("input", () => {
+  inputText.textContent = commandInput.value;
+});
+
+
+    let isAlbumUnlocked = false;
+    let isBonusTrackUnlocked = false;
+
+    let currentDir = "Fond du Lac, Wi/Terminal";
+
+    const folders = {
+      "Fond du Lac, Wi/Terminal": ["Note to Self", "Bonus Track", "Things and Stuff", "FDL, WI"],
+      "Fond du Lac, Wi/Terminal/Note to Self": ["note_to_self_copy.txt"],
+      "Fond du Lac, Wi/Terminal/Bonus Track": ["bonus_track.mp3"],
+      "Fond du Lac, Wi/Terminal/Things and Stuff": [
+        "ducks.mp4",
+        "evildeadyouareallgoingtodietonightfilmclipyo.mp3",
+        "Fond du Lac, Wi Ascii.rtf",
+        "IMG_7276.PNG",
+        "illleaveyoualoneforevernowyoutube.mp3",
+        "IMG_4665_600mgibu.PNG",
+        "IMG_5873.PNG",
+        "IMG_5874.PNG",
+        "iluvmylife.mp4",
+        "IMG_4539.MOV",
+        "IMG_5916.PNG",
+        "IMG_5929.JPG",
+        "IMG_5936_chiliverde.PNG",
+        "IMG_6065.HEIC",
+        "vvsleepy.mp4",
+        "IMG_6066.PNG",
+        "IMG_6632.PNG",
+        "jessicasdailyaffirmationyoutube.mp3",
+        "itsasign.mp4",
+        "still life.m4a",
+        "thispokemonstreamerspent4yearstofinda1shinypokem_shiny feebas scream.mp3",
+        "One_Way_Ticket.pdf"
+      ],
+      "Fond du Lac, Wi/Terminal/FDL, WI": [
+        "fdl wi cover art_v1.jpg",
+        "(1) hole where whole once was_master 3.wav",
+        "(2) to be a lover of things and stuff_master 1.wav",
+        "(3) indie sleeze is fucking stupid (may i stop asking for permission now?)_master 1.wav",
+        "(4) i am no longer myself, i have become me_master 2_alt.wav",
+        "(5) lipgloss on my geek bar_master 1.wav",
+        "(6) 2soon2laugh_master 1.wav",
+        "(7) self fulfilling prophecies as a form of self sabotage_master 1_v2.wav",
+        "(8) the cyclical nature of things is giving me a tummy ache_master 1.wav",
+        "(9) tbh idk wtf (i'm doing)_master 1.wav",
+        "(10) my derp life as a vessel_master 3.wav",
+        "(11) fomo activation sequence initiated_master 2.wav",
+        "(12) Whole where hole once was (goodbye forever, now)_master 3.wav",
+        "(bonus track) my heart aches as i rip it from its roots (bonus track)_master 2_w trans.wav"
+      ]
+    };
+
+    // Progress bar elements
+const progressBar = document.getElementById("progress-bar");
+const progressText = document.getElementById("progress-text");
+
+// Track visited folders
+const progressFolders = [
+  "Fond du Lac, Wi/Terminal/Note to Self",
+  "Fond du Lac, Wi/Terminal/Bonus Track",
+  "Fond du Lac, Wi/Terminal/Things and Stuff",
+  "Fond du Lac, Wi/Terminal/FDL, WI"
+];
+
+let visitedFolders = JSON.parse(localStorage.getItem("visitedFolders") || "[]");
+
+// Update the progress bar display
+function updateProgressBar() {
+  const percent = Math.round((visitedFolders.length / progressFolders.length) * 100);
+  progressBar.style.width = `${percent}%`;
+  progressText.textContent = `Progress: ${percent}%`;
+}
+
+// Mark a folder as visited
+function markFolderVisited(folder) {
+  if (!visitedFolders.includes(folder)) {
+    visitedFolders.push(folder);
+    localStorage.setItem("visitedFolders", JSON.stringify(visitedFolders));
+    updateProgressBar();
+  }
+}
+
+localStorage.removeItem("visitedFolders");
+visitedFolders = [];
+// Initialize bar on load
+updateProgressBar();
+
+
+
+    function print(msg = "") {
+      const line = document.createElement("div");
+      line.textContent = msg;
+      terminal.appendChild(line);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function printPrompt() {
+      print(`\n${currentDir} $`);
+    }
+
+    function typeOutText(text, callback = null, delay = 10) {
+  let i = 0;
+  function type() {
+    if (i < text.length) {
+      terminal.innerHTML += text[i++];
+      terminal.scrollTop = terminal.scrollHeight;
+      setTimeout(type, delay);
+    } else {
+      terminal.innerHTML += "\n";
+      if (callback) callback();
+    }
+  }
+  type();
+}
+
+
+    function processCommand(input) {
+      const args = input.trim().split(" ");
+      const cmd = args[0];
+      const param = args.slice(1).join(" ");
+
+      switch (cmd) {
+        case "clear":
+          terminal.innerHTML = "";
+         // print("Welcome User!");
+         // print("FDL, WI. Population … U *shrugs*");
+         // print("Terminal");
+         // print(" ");
+         // print("Use `ls` to list folders and folder contents, `cd [folder name]` to explore, `cd ..` to move up a directory, `cat [file]` to view contents, and `clear` to clear terminal");
+         // print("Some files may be encoded, locked, or require renaming to reveal their contents...");
+         // printPrompt();
+         // break;
+
+          typeOutText("Welcome User!", () => {
+            typeOutText("FDL, WI. Population … U *shrugs*\nTerminal", () => {
+              typeOutText("Use `ls` to list folders and folder contents, `cd [folder name]` to explore, `cd ..` to move up a directory, `cat [file]` to view contents, and `clear` to clear terminal\n", () => {
+                typeOutText("Some files may be encoded, locked, or require renaming to reveal their contents...", () => {
+                  
+                  printPrompt(); // regular prompt, no typing
+                });
+              });
+            });
+          });
+          break;
+
+          case "ls": {
+            let targetDir = currentDir;
+
+            if (param) {
+              const cleanParam = param.trim();
+              const candidatePath = `${currentDir}/${cleanParam}`;
+
+              if (folders[candidatePath]) {
+                targetDir = candidatePath;
+              } else {
+                print(`No such directory: ${cleanParam}`);
+                printPrompt();
+                break;
+              }
+            }
+
+            // Show custom message for album folder
+            if (targetDir === "Fond du Lac, Wi/Terminal/FDL, WI") {
+              print("goodbye forever now...");
+            } else {
+              const list = folders[targetDir] || [];
+              print(list.join("  "));
+            }
+
+            // Show special hint for "Things and Stuff"
+            if (targetDir === "Fond du Lac, Wi/Terminal/Things and Stuff") {
+              print("\nHint: use `cat all` to reveal the media in this folder.");
+            }
+
+            printPrompt();
+            break;
+          }
+
+
+        case "cd": {
+          const cleanParam = param.trim();
+
+          if (cleanParam === "..") {
+            currentDir = "Fond du Lac, Wi/Terminal";
+          } else {
+            const targetDir = `${currentDir}/${cleanParam}`;
+            if (folders[targetDir]) {
+              currentDir = targetDir;
+            } else {
+              print("No such directory");
+            }
+          }
+          printPrompt();
+          break;
+        }
+
+        case "cat": {
+          if (param === "goodbye forever now...") {
+  if (currentDir === "Fond du Lac, Wi/Terminal/FDL, WI") {
+    print("Departure approaches. Do u have ur One_Way_Ticket?.");
+    promptForPassword(
+      "meetmeatthebottomofthelake",
+      () => {
+        const albumFiles = folders[currentDir] || [];
+        let index = 0;
+
+        markFolderVisited(currentDir);
+
+
+        function revealNextTrack() {
+          if (index >= albumFiles.length) {
+            const zipLink = document.createElement("a");
+            //zipLink.href = "Fond%20du%20Lac,%20Wi/Terminal/FDL,%20WI/Lafayette%20Vanderkin-Jus_Fond%20du%20Lac,%20Wi.zip";
+            //zipLink.download = "Lafayette Vanderkin-Jus_Fond du Lac, Wi.zip";
+            zipLink.href = "https://drive.google.com/uc?export=download&id=1xkYDZGZrb2rq69kQPxYQXjlq5sEqpP4v";
+            zipLink.download = "Lafayette Vanderkin-Jus_Fond du Lac, Wi.zip";
+            zipLink.textContent = "⬇DL (.zip)";
+            zipLink.target = "_blank";
+            zipLink.style.display = "block";
+            zipLink.style.marginTop = "20px";
+            zipLink.style.color = "#0f0";
+
+            terminal.appendChild(zipLink);
+            terminal.scrollTop = terminal.scrollHeight;
+
+            print("Access granted.");
+            print("omg u did it! Thanks for playing!\nSo happy I get one more chance to say goodbye! So here it is,\ngoodbye forever now…!!! \nfor really real this time :3")
+            printPrompt();
+            return;
+          }
+
+          const file = albumFiles[index];
+          const ext = file.split('.').pop().toLowerCase();
+          const safeName = encodeURIComponent(file);
+          const path = `Fond du Lac, Wi/Terminal/FDL, WI/${safeName}`;
+
+          const container = document.createElement("div");
+          container.className = "media-container";
+          container.style.marginBottom = "15px";
+
+          const label = document.createElement("div");
+          label.className = "media-label";
+          label.style.marginBottom = "5px";
+
+          if (["mp3", "m4a", "wav"].includes(ext)) {
+            label.textContent = `Playing: ${file}`;
+            container.appendChild(label);
+
+            const audio = document.createElement("audio");
+            audio.controls = true;
+            audio.controlsList = "nodownload";
+            audio.src = path;
+            container.appendChild(audio);
+          } else if (["jpg", "jpeg", "png"].includes(ext)) {
+            label.textContent = `Displaying: ${file}`;
+            container.appendChild(label);
+
+            const img = document.createElement("img");
+            img.src = path;
+            img.alt = file;
+            img.style.display = "block";
+            img.style.maxWidth = "25%";
+            img.style.border = "1px solid #555";
+            container.appendChild(img);
+          }
+
+          if (container.children.length > 0) {
+            terminal.appendChild(container);
+            terminal.scrollTop = terminal.scrollHeight;
+          }
+
+          index++;
+          setTimeout(revealNextTrack, 400); // Delay between media
+        }
+        markFolderVisited(currentDir);
+
+        revealNextTrack();
+      },
+      () => {
+        print("Incorrect password.");
+        printPrompt();
+      }
+    );
+    break; // exit early to avoid double prompt print
+  
+  }
+}
+
+
+          if (param === "all") {
+            if (currentDir === "Fond du Lac, Wi/Terminal/Things and Stuff") {
+  const allFiles = folders[currentDir] || [];
+  let index = 0;
+
+  function revealSequentially() {
+    if (index >= allFiles.length) {
+      terminal.scrollTop = terminal.scrollHeight;
+      printPrompt();
+      return;
+    }
+
+    const file = allFiles[index];
+    const ext = file.split('.').pop().toLowerCase();
+    const filePath = `Fond du Lac, Wi/Terminal/Things and Stuff/${encodeURIComponent(file)}`;
+
+    const container = document.createElement("div");
+    container.className = "media-container";
+    container.style.marginBottom = "15px";
+
+    const label = document.createElement("div");
+    label.className = "media-label";
+    label.style.marginBottom = "5px";
+
+    switch (ext) {
+      case "mp3":
+      case "m4a":
+        label.textContent = `Playing: ${file}`;
+        container.appendChild(label);
+
+        const audio = document.createElement("audio");
+        audio.controls = true;
+        audio.src = filePath;
+        container.appendChild(audio);
+
+        terminal.appendChild(container);
+        break;
+
+      case "mp4":
+        label.textContent = `Playing: ${file}`;
+        container.appendChild(label);
+
+        const video = document.createElement("video");
+        video.controls = true;
+        video.src = filePath;
+        video.style.maxWidth = "50%";
+        container.appendChild(video);
+
+        terminal.appendChild(container);
+        break;
+
+      case "png":
+      case "jpg":
+      case "jpeg":
+        label.textContent = `Displaying: ${file}`;
+        container.appendChild(label);
+
+        const img = document.createElement("img");
+        img.src = filePath;
+        img.alt = file;
+        img.style.maxWidth = "25%";
+        img.style.border = "1px solid #555";
+        container.appendChild(img);
+
+        terminal.appendChild(container);
+        break;
+
+      case "pdf":
+        label.textContent = `Final file unlocked: ${file}`;
+        container.appendChild(label);
+
+        const link = document.createElement("a");
+        link.href = filePath;
+        link.target = "_blank";
+        link.textContent = `Open ${file}`;
+        link.style.color = "#0f0";
+        container.appendChild(link);
+
+        const finalMsg = document.createElement("div");
+        finalMsg.textContent = "You are now leaving the terminal.\n\n-- C U SOON :3 --";
+        finalMsg.style.marginTop = "10px";
+        container.appendChild(finalMsg);
+
+        terminal.appendChild(container);
+        break;
+
+      case "mov":
+        label.textContent = `${file} Unable to display. Device not holy enough.`;
+        container.appendChild(label);
+        terminal.appendChild(container);
+        break;
+        
+      case "heic":
+        label.textContent = `${file} Look into the mirror and find the reflection in ur eye; this is the face of god.`;
+        container.appendChild(label);
+        terminal.appendChild(container);
+        break;        
+
+        case "rtf":
+        label.textContent = `${file} the basilisk is a worm.`;
+        container.appendChild(label);
+        terminal.appendChild(container);
+        break;             
+
+      default:
+        print(`Unsupported file type: ${file}`);
+    }
+
+    terminal.scrollTop = terminal.scrollHeight;
+    index++;
+    setTimeout(revealSequentially, 350); // delay in ms between each reveal
+  }
+  markFolderVisited(currentDir);
+
+  revealSequentially();
+} else {
+  print(`"cat all" only works in the Things and Stuff directory.`);
+  printPrompt();
+}
+break;
+          }
+
+          if (
+            currentDir === "Fond du Lac, Wi/Terminal/Note to Self" &&
+            param === "note_to_self_copy.txt"
+          ) {
+            window.open(
+              "Fond du Lac, Wi/Terminal/Note to Self/note_to_self_copy.txt",
+              "_blank"
+            );
+            markFolderVisited(currentDir);
+
+            printPrompt();
+            break;
+          } else if (currentDir === "Fond du Lac, Wi/Terminal/Bonus Track") {
+            if (param === "bonus_track.mp3") {
+              print(
+                "Cannot open bonus_track.mp3\n \nListen with ur eyes\n+1 Aura needed\nTo be born longing for a new name\n"
+              );
+              print(" ");
+              print("Use `mv [oldName newName] to rename`");
+              printPrompt();
+            
+              break;
+            } else if (param === "bonus_track.mp4") {
+              if (!isBonusTrackUnlocked) {
+                print("Access denied. Try renaming the file.");
+                printPrompt();
+                break;
+              }
+
+              print(`Opening video file ${param}...`);
+
+              const container = document.createElement("div");
+              container.className = "media-container";
+
+              const videoLabel = document.createElement("div");
+              videoLabel.className = "media-label";
+              videoLabel.textContent = `Playing: ${param}`;
+              container.appendChild(videoLabel);
+
+              const video = document.createElement("video");
+              video.controls = true;
+              video.src = encodeURI(
+                `Fond du Lac, Wi/Terminal/Bonus Track/bonus_track.mp4`
+              );
+              container.appendChild(video);
+
+              terminal.appendChild(container);
+              terminal.scrollTop = terminal.scrollHeight;
+              markFolderVisited(currentDir);
+
+
+              video.play().catch(err => {
+              console.warn("Autoplay failed:", err);
+              });
+
+              printPrompt();
+              break;
+            } else {
+              print(`Cannot open ${param}`);
+              printPrompt();
+              break;
+            }
+          } else {
+            print(`Cannot open ${param}`);
+            printPrompt();
+            break;
+          }
+        }
+
+        case "mv": {
+          const [source, dest] = param.split(" ");
+          if (
+            currentDir === "Fond du Lac, Wi/Terminal/Bonus Track" &&
+            source === "bonus_track.mp3" &&
+            dest === "bonus_track.mp4"
+          ) {
+            const index = folders[currentDir].indexOf(source);
+            if (index !== -1) {
+              folders[currentDir][index] = dest;
+              isBonusTrackUnlocked = true;
+              print("File renamed successfully.");
+            } else {
+              print("Source file not found.");
+            }
+          } else {
+            print("Invalid rename command.");
+          }
+          printPrompt();
+          break;
+        }
+
+        case "password":
+          if (param === "meetmeatthebottomofthelake") {
+            window.hasEnteredPassword = true;
+            print("Access granted.");
+          } else {
+            print("Incorrect password.");
+          }
+          printPrompt();
+          break;
+
+          case "echo": {
+  // Full input string after echo command
+  // e.g. "bm90ZSB0byBzZWxmOiBwYXNzd29yZCBuZWVkZWQ= | base64 -d"
+  const fullInput = param; 
+
+  // Split on pipe to separate the string and the pipe command
+  const [echoStrPart, pipePart] = fullInput.split("|").map(s => s.trim());
+
+  if (pipePart === "base64 -d" || pipePart === "base64 decode") {
+    try {
+      // Remove any quotes if user put them in
+      const cleanStr = echoStrPart.replace(/^"|"$/g, '');
+
+      // Decode base64
+      const decoded = atob(cleanStr);
+      print(decoded);
+    } catch (e) {
+      print("Error: Invalid base64 string.");
+    }
+  } else {
+    print("Invalid echo syntax. Try: echo yourBase64String | base64 -d");
+  }
+  break;
+          }
+        }
+  }
+    // Initial welcome text and prompt
+   // print("Welcome User!");
+   // print("FDL, WI. Population … U *shrugs*");
+   // print("Terminal" +"");
+   // print(" ");
+   // print("Use `ls` to list folders and folder contents, `cd [folder name]` to explore, `cd ..` to move up a directory, `cat [file]` to view contents, and `clear` to clear terminal");
+   // print("Some files may be encoded, locked, or require renaming to reveal their contents...");
+   // printPrompt();
+
+   // On load
+typeOutText("Welcome User!", () => {
+  typeOutText("FDL, WI. Population … U *shrugs*\nTerminal", () => {
+    typeOutText("Use `ls` to list folders and folder contents, `cd [folder name]` to explore, `cd ..` to move up a directory, `cat [file]` to view contents, and `clear` to clear terminal\n", () => {
+      typeOutText("Some files may be encoded, locked, or require renaming to reveal their contents...", () => {
+        setTimeout(() => {
+          window.parent.postMessage({ action: 'openStickynote' }, '*');
+        }, 300);  // Delay here
+
+        printPrompt(); // regular prompt, no typing
+      });
+    });
+  });
+});
+
+
+    commandInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const cmd = commandInput.value;
+        print(`${currentDir} $ ${cmd}`);
+        print(" ");
+        processCommand(cmd);
+        commandInput.value = "";
+        inputText.textContent = "";
+      }
+    });
+
+    function promptForPassword(expectedPassword, onSuccess, onFailure) {
+      commandInput.disabled = true;
+
+      const passwordInput = document.createElement("input");
+      passwordInput.type = "password";
+      passwordInput.placeholder = "Enter password";
+      passwordInput.style.background = "black";
+      passwordInput.style.color = "#0f0";
+      passwordInput.style.border = "1px solid #000";
+      passwordInput.style.fontFamily = "Courier New";
+      passwordInput.style.display = "block";
+      passwordInput.style.marginTop = "10px";
+      passwordInput.autofocus = true;
+
+      document.body.appendChild(passwordInput);
+      passwordInput.focus();
+
+      passwordInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const inputPassword = passwordInput.value.trim();
+          document.body.removeChild(passwordInput);
+          commandInput.disabled = false;
+          commandInput.focus();
+
+          if (inputPassword === expectedPassword) {
+            onSuccess();
+          } else {
+            onFailure();
+          }
+        }
+      });
+      function focusInput() {
+  commandInput.focus();
+}
+
+document.addEventListener("keydown", (e) => {
+  if (!document.querySelector("input[type='password']")) {
+    focusInput();
+  }
+});
+
+document.addEventListener("click", (e) => {
+  if (!document.querySelector("input[type='password']")) {
+    focusInput();
+  }
+});
+
+window.onload = () => {
+  setTimeout(() => {
+    focusInput();
+  }, 300);  // 300ms delay; adjust if needed
+};
+
+
+
+    }
+    document.getElementById('back-button').addEventListener('click', () => {
+  window.parent.postMessage({ action: 'goBack' }, '*');
+  window.location.href = 'fdl-desktop.html';
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('back-button').style.display = 'block';
+  });
+    
+  </script>
+
+</body>
+</html>
+     

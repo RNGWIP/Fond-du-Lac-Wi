@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fond du Lac, Wi - Audio Visual Experience</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: black;
+      color: white;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    #prompt, #titletext, video, #goodbye {
+      display: none;
+      color: #0f0;
+    }
+
+    #prompt input, #prompt button {
+      font-size: 1.1rem;
+      padding: 6px 12px;
+      background: #111;
+      color: #0f0;
+      border: 1px solid #0f0;
+      margin-top: 10px;
+    }
+
+    #titletext {
+      font-size: 1.5rem;
+      text-align: center;
+      color: #0f0;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+    }
+
+   /*#ytplayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  border: none;
+}*/
+
+
+    #back-button {
+    display: none;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    /* your other styles here */
+    z-index: 9999;
+    padding: 10px 15px;
+    background-color: black;
+    color: white;
+    border: 1px solid white;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    font-family: 'Courier New', Courier, monospace;
+    
+  }
+  body:hover #back-button {
+  opacity: 1;
+  pointer-events: auto;
+}
+  </style>
+</head>
+<body>
+
+  <div id="prompt">
+    <div>Would you like to play?</div>
+    <div>Type "yes" or click a button to confirm.</div>
+    <input type="text" id="inputField" placeholder="Type here..." />
+    <div style="margin-top: 10px;">
+      <button onclick="handleChoice('yes')">Yes</button>
+      <button onclick="handleChoice('no')">No</button>
+    </div>
+  </div>
+
+  <div id="titletext">Fond du Lac, Wi <br>
+    <br>
+    an audio visual experience by Lafayette Vanderkin-Jus</div>
+  <div id="goodbye">lol, oki...</div>
+  <video id="videoplayer" controls></video>
+
+  <!--<iframe
+  id="ytplayer"
+  type="text/html"
+  width="100%"
+  height="100%"
+  src=""
+  frameborder="0"
+  allow="autoplay; encrypted-media"
+  allowfullscreen
+  style="display: none;"
+></iframe>-->
+
+
+
+  <button id="back-button" style="
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 9999;
+  padding: 10px 15px;
+  background-color: black;
+  color: #0f0;
+  border: 1px solid  #0f0;
+  cursor: pointer;
+  box-sizing: border-box;
+  height: 50px;
+  min-width: 120px;
+">
+  ⬅ Back
+</button>
+
+  <script>
+    const promptBox = document.getElementById("prompt");
+    const input = document.getElementById("inputField");
+    const title = document.getElementById("titletext");
+    const video = document.getElementById("videoplayer");
+    const goodbye = document.getElementById("goodbye");
+
+    video.addEventListener('ended', () => {
+  backButton.style.opacity = '1';
+  backButton.style.pointerEvents = 'auto';
+});
+
+
+let hideButtonTimeout;
+const backButton = document.getElementById('back-button');
+
+function showBackButton() {
+  backButton.style.opacity = '1';
+  backButton.style.pointerEvents = 'auto';
+
+  clearTimeout(hideButtonTimeout);
+  hideButtonTimeout = setTimeout(() => {
+    backButton.style.opacity = '0';
+    backButton.style.pointerEvents = 'none';
+  }, 2000);
+}
+
+document.addEventListener('mousemove', showBackButton);
+document.addEventListener('touchstart', showBackButton);
+
+
+    window.onload = () => {
+      promptBox.style.display = "block";
+      input.focus();
+
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          handleChoice(input.value.trim().toLowerCase());
+        }
+      });
+    };
+
+    function handleChoice(choice) {
+      promptBox.style.display = "none";
+
+      if (choice === "yes") {
+        title.style.display = "block";
+
+        setTimeout(() => {
+          title.style.display = "none";
+
+          // <-- Fixed here: Use relative path, not absolute file path
+         // video.src = encodeURI("Fond du Lac, Wi/Fdl, Wi_AV/Fond du Lac, WI_av_v2.mp4");
+
+          video.src = "https://archive.org/download/fond-du-lac-wi-av/Fond%20du%20Lac%2C%20WI_av_v1.mp4";
+          video.style.display = "block";
+          video.play().catch(err => {
+            console.warn("Playback failed:", err);
+          });
+        }, 3000);
+
+     //  const ytPlayer = document.getElementById("ytplayer");
+     // ytPlayer.src = "https://www.youtube.com/embed/jLt9iUCzJd8?autoplay=1&controls=0&modestbranding=1&rel=0";
+     // ytPlayer.style.display = "block";
+   // }, 3000);
+     
+      } else {
+        goodbye.style.display = "block";
+      }
+    }
+
+    document.getElementById('back-button').addEventListener('click', () => {
+  window.parent.postMessage({ action: 'goBack' }, '*');
+  window.location.href = 'fdl-desktop.html';
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('back-button').style.display = 'block';
+  });
+    
+  </script>
+
+</body>
+</html>
