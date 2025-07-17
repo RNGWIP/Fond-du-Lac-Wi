@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Virtual Desktop</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: black;
+      font-family: 'Courier New', Courier, monospace;
+      overflow: hidden;
+      /*transform-origin: top left;*/
+      /*transform: scale(.25);*/
+
+
+    }
+
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #0f0;
+      font-size: 1.5rem;
+    }
+
+    #desktop {
+      display: none;
+      width: 100%;
+      height: 100vh;
+      background-image: url('Fond%20du%20Lac,%20Wi/Terminal/FDL,%20WI/fdl%20wi%20art_9.png');
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+
+    .folder {
+      position: absolute;
+      width: 80px;
+      text-align: center;
+      color: white;
+      cursor: pointer;
+    }
+
+    .folder img {
+      width: 100%;
+      height: auto;
+    }
+
+    .folder span {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.8rem;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    #back-button {
+    display: none;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    /* your other styles here */
+  }
+  #session-timer {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #0f0;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #0f0;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+  z-index: 20;
+}
+#session-timer .timer-label {
+  font-size: 14px;
+  margin-bottom: 4px;
+  /*text-transform: uppercase;*/
+  letter-spacing: 1px;
+}
+
+#session-timer .timer-countdown {
+  font-size: 14px;
+  font-weight: normal;
+}
+
+
+#session-expired-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #0f0;
+  z-index: 1000;
+}
+
+.expired-message {
+  text-align: center;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.expired-message h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+  </style>
+</head>
+<body>
+  <div id="loading">Loading...</div>
+
+  <div id="desktop">
+    <div class="folder" style="top: 100px; left: 100px;" onclick="location.href='fdl-av.html'">
+      <img src="icons8-mac-folder-48.png" alt="Folder 1" />
+      <span>Fond du Lac, Wi AV</span>
+    </div>
+
+    <!--<div class="folder" style="top: 100px; left: 220px;" onclick="location.href='fdl-terminal.html'">-->
+        <div id="terminal-folder" class="folder" style="top: 100px; left: 220px;">
+      <img src="icons8-mac-folder-48.png" alt="Folder 2" />
+      <span>Terminal</span>
+    </div>
+    <div id="session-timer">
+        <div class="timer-label">Trial Ends In:</div>
+        <div class="timer-countdown">00:10</div>
+      </div>
+
+
+<div id="session-expired-overlay" style="display: none;">
+  <div class="expired-message">
+    <h1>Trial Session Is Up</h1>
+    <p>guess nothing lasts forever <br> i have to go now</p>
+  </div>
+</div>
+
+
+  <button id="back-button">Back</button>
+
+  <script>
+    window.onload = () => {
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('desktop').style.display = 'block';
+    
+        const input = document.getElementById('command');
+        if (input) {
+          input.focus();
+          document.addEventListener('keydown', () => {
+            if (document.activeElement !== input) {
+              input.focus();
+            }
+          });
+        }
+    
+        // NEW: Terminal folder click handler
+        const terminalFolder = document.getElementById('terminal-folder');
+        if (terminalFolder) {
+          terminalFolder.addEventListener('click', (e) => {
+            e.preventDefault();
+    
+            // Tell the parent page to load the sticky note
+            console.log('CLICK detected: sending postMessage to parent');
+            //window.parent.postMessage({ action: 'openStickynote' }, '*');
+    
+            // Delay navigation slightly
+         //  setTimeout(() => {
+              window.location.href = 'fdl-terminal.html';
+          //  }, 100);
+          });
+        } else {
+          console.warn('Terminal folder not found!');
+        }
+      }, 1500);
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+    const backBtn = document.getElementById('back-button');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        window.parent.postMessage({ action: 'goBack' }, '*');
+        console.log('Back button clicked: sent goBack message');
+      });
+    } else {
+      console.warn('Back button not found!');
+    }
+  });
+
+  // Listen for messages from the terminal iframe
+window.addEventListener('message', (event) => {
+    if (event.data.action === 'openStickynote') {
+  setTimeout(() => {
+    openStickynote();
+  }, 1500);
+}
+
+});
+
+// Define the sticky note action
+function openStickynote() {
+  // 🟨 Replace this with however your sticky note is meant to appear
+  alert('💬 Sticky note triggered!'); // TEMP — use your real sticky note logic here
+}
+
+(function() {
+  const EXPIRY_DATE = new Date('2025-07-25T23:59:59'); // set your expiry date/time here (in UTC)
+
+  const timerEl = document.getElementById('session-timer');
+  const countdownEl = document.querySelector('#session-timer .timer-countdown');
+  const overlayEl = document.getElementById('session-expired-overlay');
+
+  function formatTime(totalSeconds) {
+    const days = Math.floor(totalSeconds / (3600 * 24));
+    const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+
+    return `${days}d ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+  }
+
+  function disableDesktop() {
+    document.querySelectorAll('button, a').forEach(el => {
+      el.disabled = true;
+      el.style.pointerEvents = 'none';
+      el.style.opacity = '0.5';
+    });
+    overlayEl.style.display = 'flex';
+    window.parent.postMessage({ action: 'sessionExpired' }, '*');
+  }
+
+  function updateTimer() {
+    const now = new Date();
+    let remainingSeconds = Math.floor((EXPIRY_DATE - now) / 1000);
+
+    if (remainingSeconds <= 0) {
+      countdownEl.textContent = "00:00:00:00";
+      disableDesktop();
+      clearInterval(interval);
+      return;
+    }
+
+    countdownEl.textContent = formatTime(remainingSeconds);
+  }
+
+  // Run once immediately to handle expired case right away
+  updateTimer();
+
+  // Then keep ticking every second
+  const interval = setInterval(updateTimer, 1000);
+})();
+
+
+
+    </script>
+    
+    
+</body>
+</html>
