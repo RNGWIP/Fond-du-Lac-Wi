@@ -61,10 +61,12 @@ a {
   color: #0f0;
   position: relative;
   margin-top: 10px;
+  margin-left: 11px;
 }
 
 #prompt-prefix {
   margin-right: 10px;
+  /*margin-left: 11px;*/
   color: #0f0;
 }
 
@@ -239,7 +241,7 @@ commandInput.addEventListener("input", () => {
         "(9) tbh idk wtf (i'm doing)_master 1.wav",
         "(10) my derp life as a vessel_master 3.wav",
         "(11) fomo activation sequence initiated_master 2.wav",
-        "(12) Whole where hole once was (goodbye forever, now)_master 3.wav",
+        "(12) Whole where hole once was (goodbye forever, now)_master 4.wav",
         "(bonus track) my heart aches as i rip it from its roots (bonus track)_master 2_w trans.wav"
       ]
     };
@@ -325,16 +327,21 @@ updateProgressBar();
          // printPrompt();
          // break;
 
-          typeOutText("Welcome User!", () => {
-            typeOutText("FDL, WI. Population … U *shrugs*\nTerminal", () => {
-              typeOutText("Use `ls` to list folders and folder contents, `cd [folder name]` to explore, `cd ..` to move up a directory, `cat [file]` to view contents, and `clear` to clear terminal\n", () => {
-                typeOutText("Some files may be encoded, locked, or require renaming to reveal their contents...", () => {
-                  
-                  printPrompt(); // regular prompt, no typing
-                });
-              });
-            });
-          });
+typeOutText("Welcome User!", () => {
+  typeOutText("FDL, WI. Population … U *shrugs*\nTerminal", () => {
+    //typeoutText(" ",()=> {
+    typeOutText("\nCommands: use `ls` to list folders and folder contents, `cd [folder name]` to access folders, `cd ..` to navigate back to main directory, `cat [file]` to view contents, and `clear` to clear terminal\n", () => {
+      typeOutText("Some files may be encoded, locked, or require renaming...", () => {
+        setTimeout(() => {
+          window.parent.postMessage({ action: 'openStickynote' }, '*');
+        }, 300);  // Delay here
+
+        printPrompt(); // regular prompt, no typing
+      });
+    });
+  //});
+  });
+});
           break;
 
           case "ls": {
@@ -343,6 +350,7 @@ updateProgressBar();
             if (param) {
               const cleanParam = param.trim();
               const candidatePath = `${currentDir}/${cleanParam}`;
+  
 
               if (folders[candidatePath]) {
                 targetDir = candidatePath;
@@ -353,22 +361,35 @@ updateProgressBar();
               }
             }
 
+            if (targetDir === "Fond du Lac, Wi/Terminal/Note to Self") {
+              print("note_to_self_copy.txt");
+            }
+
+            if (targetDir === "Fond du Lac, Wi/Terminal/Bonus Track") {
+              print("bonus_track.mp3");
+            }
+
             // Show custom message for album folder
             if (targetDir === "Fond du Lac, Wi/Terminal/FDL, WI") {
               print("goodbye forever now...");
             } else {
               const list = folders[targetDir] || [];
-              print(list.join("  "));
+              if (list.length === 4) {
+              print("Folders:" + " " + list.join(" | "));
             }
+          }
+
 
             // Show special hint for "Things and Stuff"
             if (targetDir === "Fond du Lac, Wi/Terminal/Things and Stuff") {
-              print("\nHint: use `cat all` to reveal the media in this folder.");
+              print("ducks.mp4, evildeadyouareallgoingtodietonightfilmclipyo.mp3, Fond du Lac, Wi Ascii.rtf, IMG_7276.PNG, illleaveyoualoneforevernowyoutube.mp3, IMG_4665_600mgibu.PNG, IMG_5873.PNG, IMG_5874.PNG, iluvmylife.mp4, IMG_4539.MOV, IMG_5916.PNG, IMG_5929.JPG, IMG_5936_chiliverde.PNG, IMG_6065.HEIC, vvsleepy.mp4, IMG_6066.PNG, IMG_6632.PNG, jessicasdailyaffirmationyoutube.mp3, itsasign.mp4, still life.m4a, thispokemonstreamerspent4yearstofinda1shinypokem_shiny feebas scream.mp3, One_Way_Ticket.pdf\n \nUse `cat all` to reveal the media in this folder");
             }
 
             printPrompt();
             break;
           }
+
+          
 
 
         case "cd": {
@@ -407,6 +428,7 @@ updateProgressBar();
             //zipLink.href = "Fond%20du%20Lac,%20Wi/Terminal/FDL,%20WI/Lafayette%20Vanderkin-Jus_Fond%20du%20Lac,%20Wi.zip";
             //zipLink.download = "Lafayette Vanderkin-Jus_Fond du Lac, Wi.zip";
             zipLink.href = "https://drive.google.com/uc?export=download&id=1xkYDZGZrb2rq69kQPxYQXjlq5sEqpP4v";
+            //https://drive.google.com/file/d/1xkYDZGZrb2rq69kQPxYQXjlq5sEqpP4v/view?usp=sharing
             zipLink.download = "Lafayette Vanderkin-Jus_Fond du Lac, Wi.zip";
             zipLink.textContent = "⬇DL (.zip)";
             zipLink.target = "_blank";
@@ -418,7 +440,7 @@ updateProgressBar();
             terminal.scrollTop = terminal.scrollHeight;
 
             print("Access granted.");
-            print("omg u did it! Thanks for playing!\nSo happy I get one more chance to say goodbye! So here it is,\ngoodbye forever now…!!! \nfor really real this time :3")
+            print("omg u did it! Thanks for playing!\nI'm so happy we get to say goodbye one more time! So here it is,\ngoodbye forever now…!!! \nfor really real this time :3")
             printPrompt();
             return;
           }
@@ -742,8 +764,9 @@ break;
    // On load
 typeOutText("Welcome User!", () => {
   typeOutText("FDL, WI. Population … U *shrugs*\nTerminal", () => {
-    typeOutText("Use `ls` to list folders and folder contents, `cd [folder name]` to explore, `cd ..` to move up a directory, `cat [file]` to view contents, and `clear` to clear terminal\n", () => {
-      typeOutText("Some files may be encoded, locked, or require renaming to reveal their contents...", () => {
+    //typeoutText(" ",()=> {
+    typeOutText("\nCommands: use `ls` to list folders and folder contents, `cd [folder name]` to access folders, `cd ..` to navigate back to main directory, `cat [file]` to view contents, and `clear` to clear terminal\n", () => {
+      typeOutText("Some files may be encoded, locked, or require renaming...", () => {
         setTimeout(() => {
           window.parent.postMessage({ action: 'openStickynote' }, '*');
         }, 300);  // Delay here
@@ -751,6 +774,7 @@ typeOutText("Welcome User!", () => {
         printPrompt(); // regular prompt, no typing
       });
     });
+  //});
   });
 });
 

@@ -6,6 +6,10 @@ import { CSS3DRenderer, CSS3DObject } from './3js_material/CSS3DRenderer.js';
 
 console.log('Init started');
 
+
+
+
+
 let scene, camera, renderer, cssRenderer, controls;
 let raycaster, mouse;
 let powerButtonMesh = null;
@@ -278,11 +282,51 @@ function startZoom() {
   
     animateZoom();
   }
-  
+
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
 
 function showIframe() {
   // Remove previous CSS3DObjects
   scene.children = scene.children.filter(child => !(child instanceof CSS3DObject));
+
+if (isSafari) {
+  const overlay = document.createElement('div');
+  overlay.style.position = 'fixed';
+  overlay.style.bottom = '50px';
+  overlay.style.left = '0';
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.background = 'rgba(0, 0, 0, 0)';
+  overlay.style.color = '#0f0';
+  overlay.style.zIndex = '9999';
+  overlay.style.display = 'flex';
+  overlay.style.flexDirection = 'column';
+  overlay.style.justifyContent = 'center';
+  overlay.style.alignItems = 'center';
+  overlay.style.textAlign = 'center';
+ // overlay.style.padding = '20px';
+
+  overlay.innerHTML = `
+    <div style="
+      max-width: 600px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.5rem;
+      line-height: 1.6;
+    ">
+      <p>Sowwwwyyyyy!!! (╥﹏╥) This jouwney is not suppowted on Safawi 🧭🚫 ｡°(°.◜ᯅ◝°)°｡</p>
+      <p>Pwease use a diffewent bwowsuh, wike Chwome 4 the fuww expewience ૮꒰◞ ˕ ◟ ྀི꒱ა</p>
+    </div>
+  `;
+
+  
+
+  
+
+  document.body.appendChild(overlay);
+  throw new Error("Safari not supported.");
+}
+
 
   const iframe = document.createElement('iframe');
   iframe.src = 'fdl-desktop.html';
@@ -417,14 +461,15 @@ function startIntroCameraAnimation() {
   
     const noteDiv = document.createElement('div');
     noteDiv.innerHTML = `
-      <div style="padding: 10px;">
+      <div style="padding: 5px;">
         <h3 style="margin: 0; font-size: 18px;">for mom and dad</h3>
-        <p style="margin: 5px 0 0; font-size: 16px;">
-        first use 'ls',\n
-        then 'cd',\n
-        then 'ls' again,\n 
-        then 'cat',\n
-        and finally 'cd ..' to go back :)
+        <p style="margin: 5px 0 0; font-size: 13px;">
+        (1)st use 'ls',<br>
+        (2)nd 'cd "folder name"',<br>
+        (3)rd 'ls' to show folder items,<br>
+        (4)th 'cat "folder item"',<br>
+        (f)inally 'cd ..' to go back :)<br>
+        rinse and repeat (づ ᴗ _ᴗ)づ♡
                 </p>
             </div>
             `;
@@ -444,7 +489,7 @@ function startIntroCameraAnimation() {
     noteDiv.style.boxSizing = 'border-box';
   
     const stickyNote = new CSS3DObject(noteDiv);
-    stickyNote.position.set(1.2, 2.65, 0.5);  // adjust position in front of screen
+    stickyNote.position.set(1.2, 2.63, 0.5);  // adjust position in front of screen
     stickyNote.rotation.set(0, 0, -.33);
     stickyNote.scale.set(0.002, 0.002, 0.002);  // adjust scale to match your scene
   

@@ -43,6 +43,7 @@
       text-align: center;
       color: white;
       cursor: pointer;
+      touch-action: manipulation;
     }
 
     .folder img {
@@ -124,16 +125,17 @@
   <div id="loading">Loading...</div>
 
   <div id="desktop">
-    <div class="folder" style="top: 100px; left: 100px;" onclick="location.href='fdl-av.html'">
-      <img src="icons8-mac-folder-48.png" alt="Folder 1" />
-      <span>Fond du Lac, Wi AV</span>
-    </div>
+  <div class="folder" style="top: 100px; left: 100px;" onclick="window.location.href='fdl-av.html'" role="button" tabindex="0" aria-label="Open Fond du Lac, Wi AV">
+    <img src="icons8-mac-folder-48.png" alt="Folder icon for Fond du Lac, Wi AV" />
+    <span>Fond du Lac, Wi AV</span>
+  </div>
 
     <!--<div class="folder" style="top: 100px; left: 220px;" onclick="location.href='fdl-terminal.html'">-->
-        <div id="terminal-folder" class="folder" style="top: 100px; left: 220px;">
-      <img src="icons8-mac-folder-48.png" alt="Folder 2" />
-      <span>Terminal</span>
-    </div>
+  <div id="terminal-folder" class="folder" style="top: 100px; left: 220px;" onclick="window.location.href='fdl-terminal.html'" role="button" tabindex="0" aria-label="Open Terminal folder">
+    <img src="icons8-mac-folder-48.png" alt="Folder icon for Terminal" />
+    <span>Terminal</span>
+  </div>
+
     <div id="session-timer">
         <div class="timer-label">Trial Ends In:</div>
         <div class="timer-countdown">00:10</div>
@@ -211,12 +213,12 @@ window.addEventListener('message', (event) => {
 
 // Define the sticky note action
 function openStickynote() {
-  // 🟨 Replace this with however your sticky note is meant to appear
-  alert('💬 Sticky note triggered!'); // TEMP — use your real sticky note logic here
+  
+  alert('Sticky note triggered!'); 
 }
 
 (function() {
-  const EXPIRY_DATE = new Date('2025-07-25T23:59:59'); // set your expiry date/time here (in UTC)
+  const EXPIRY_DATE = new Date('2025-11-15T23:59:59'); // set your expiry date/time here (in UTC)
 
   const timerEl = document.getElementById('session-timer');
   const countdownEl = document.querySelector('#session-timer .timer-countdown');

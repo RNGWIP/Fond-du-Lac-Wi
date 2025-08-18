@@ -182,17 +182,18 @@ document.addEventListener('touchstart', showBackButton);
           // <-- Fixed here: Use relative path, not absolute file path
          // video.src = encodeURI("Fond du Lac, Wi/Fdl, Wi_AV/Fond du Lac, WI_av_v2.mp4");
 
-          video.src = "https://archive.org/download/fond-du-lac-wi-av/Fond%20du%20Lac%2C%20WI_av_v1.mp4";
+          //video.src = "https://archive.org/download/fond-du-lac-wi-av/Fond%20du%20Lac%2C%20WI_av_v1.mp4";
+          video.src = "https://archive.org/download/fond-du-lac-wi-av/Fond%20du%20Lac%2C%20WI_av_v4_tagged.mp4";
           video.style.display = "block";
           video.play().catch(err => {
             console.warn("Playback failed:", err);
           });
         }, 3000);
 
-     //  const ytPlayer = document.getElementById("ytplayer");
-     // ytPlayer.src = "https://www.youtube.com/embed/jLt9iUCzJd8?autoplay=1&controls=0&modestbranding=1&rel=0";
-     // ytPlayer.style.display = "block";
-   // }, 3000);
+     /* const ytPlayer = document.getElementById("ytplayer");
+      ytPlayer.src = "https://www.youtube.com/embed/jLt9iUCzJd8?autoplay=1&controls=0&modestbranding=1&rel=0";
+      ytPlayer.style.display = "block";
+    }, 3000);*/
      
       } else {
         goodbye.style.display = "block";
