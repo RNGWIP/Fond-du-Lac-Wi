@@ -94,6 +94,12 @@ a {
     opacity: 0;
   }
 }
+#placeholder-text {
+  color: #0f0;
+  opacity: 0.75;
+  text-decoration: underline;
+  pointer-events: none;
+}
 
 /* Real input is invisible but still present for typing */
 #command {
@@ -163,6 +169,7 @@ a {
   <div id="input-line">
     <span id="prompt-prefix">user@fdlwi:$</span>
     <div id="fake-input">
+      <span id="placeholder-text">click here to type</span>
       <span id="input-text"></span><span id="blinking-cursor">█</span>
     </div>
     <input id="command" autocomplete="off" autofocus />
@@ -189,6 +196,17 @@ a {
     const terminal = document.getElementById("terminal");
     const commandInput = document.getElementById("command");
     const inputText = document.getElementById("input-text");
+
+    const placeholderText = document.getElementById("placeholder-text");
+
+commandInput.addEventListener("focus", () => {
+  if (placeholderText) placeholderText.style.display = "none";
+});
+
+commandInput.addEventListener("input", () => {
+  if (placeholderText) placeholderText.style.display = "none";
+});
+
 
 commandInput.addEventListener("input", () => {
   inputText.textContent = commandInput.value;
