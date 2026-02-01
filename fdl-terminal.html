@@ -53,7 +53,6 @@ a {
   display: inline-block;
 }
 
-/* New fake terminal input line */
 #input-line {
   display: flex;
   align-items: center;
@@ -66,13 +65,12 @@ a {
 
 #prompt-prefix {
   margin-right: 10px;
-  /*margin-left: 11px;*/
   color: #0f0;
 }
 
 #fake-input {
   position: absolute;
-  left: calc(12ch); /* Adjust if prompt text changes */
+  left: calc(12ch);
   display: flex;
   pointer-events: none;
   color: #0f0;
@@ -101,7 +99,6 @@ a {
   pointer-events: none;
 }
 
-/* Real input is invisible but still present for typing */
 #command {
   background: transparent;
   border: none;
@@ -120,7 +117,7 @@ a {
     position: absolute;
     top: 20px;
     left: 20px;
-    /* your other styles here */
+    
     z-index: 9999;
     padding: 10px 15px;
     background-color: black;
@@ -136,7 +133,6 @@ a {
   opacity: 1;
   pointer-events: auto;
 }
-
 
   </style>
 </head>
@@ -165,7 +161,7 @@ a {
 ">Progress: 0%</div>
 
   <div id="terminal"></div>
-  <!--<input id="command" autocomplete="off" autofocus />-->
+  
   <div id="input-line">
     <span id="prompt-prefix">user@fdlwi:$</span>
     <div id="fake-input">
@@ -207,11 +203,9 @@ commandInput.addEventListener("input", () => {
   if (placeholderText) placeholderText.style.display = "none";
 });
 
-
 commandInput.addEventListener("input", () => {
   inputText.textContent = commandInput.value;
 });
-
 
     let isAlbumUnlocked = false;
     let isBonusTrackUnlocked = false;
@@ -263,12 +257,10 @@ commandInput.addEventListener("input", () => {
         "(bonus track) my heart aches as i rip it from its roots (bonus track)_master 2_w trans.wav"
       ]
     };
-
-    // Progress bar elements
+    
 const progressBar = document.getElementById("progress-bar");
 const progressText = document.getElementById("progress-text");
 
-// Track visited folders
 const progressFolders = [
   "Fond du Lac, Wi/Terminal/Note to Self",
   "Fond du Lac, Wi/Terminal/Bonus Track",
@@ -278,14 +270,12 @@ const progressFolders = [
 
 let visitedFolders = JSON.parse(localStorage.getItem("visitedFolders") || "[]");
 
-// Update the progress bar display
 function updateProgressBar() {
   const percent = Math.round((visitedFolders.length / progressFolders.length) * 100);
   progressBar.style.width = `${percent}%`;
   progressText.textContent = `Progress: ${percent}%`;
 }
 
-// Mark a folder as visited
 function markFolderVisited(folder) {
   if (!visitedFolders.includes(folder)) {
     visitedFolders.push(folder);
@@ -296,10 +286,8 @@ function markFolderVisited(folder) {
 
 localStorage.removeItem("visitedFolders");
 visitedFolders = [];
-// Initialize bar on load
+
 updateProgressBar();
-
-
 
     function print(msg = "") {
       const line = document.createElement("div");
@@ -327,7 +315,6 @@ updateProgressBar();
   type();
 }
 
-
     function processCommand(input) {
       const args = input.trim().split(" ");
       const cmd = args[0];
@@ -347,17 +334,15 @@ updateProgressBar();
 
 typeOutText("Welcome User!", () => {
   typeOutText("FDL, WI. Population … U *shrugs*\nTerminal", () => {
-    //typeoutText(" ",()=> {
     typeOutText("\nCommands: use `ls` to list folders and folder contents, `cd [folder name]` to access folders, `cd ..` to navigate back to main directory, `cat [file]` to view contents, and `clear` to clear terminal\n", () => {
       typeOutText("Some files may be encoded, locked, or require renaming...", () => {
         setTimeout(() => {
           window.parent.postMessage({ action: 'openStickynote' }, '*');
-        }, 300);  // Delay here
+        }, 300);
 
-        printPrompt(); // regular prompt, no typing
+        printPrompt();
       });
     });
-  //});
   });
 });
           break;
@@ -386,8 +371,7 @@ typeOutText("Welcome User!", () => {
             if (targetDir === "Fond du Lac, Wi/Terminal/Bonus Track") {
               print("bonus_track.mp3");
             }
-
-            // Show custom message for album folder
+          
             if (targetDir === "Fond du Lac, Wi/Terminal/FDL, WI") {
               print("goodbye forever now...");
             } else {
@@ -396,9 +380,7 @@ typeOutText("Welcome User!", () => {
               print("Folders:" + " " + list.join(" | "));
             }
           }
-
-
-            // Show special hint for "Things and Stuff"
+       
             if (targetDir === "Fond du Lac, Wi/Terminal/Things and Stuff") {
               print("ducks.mp4, evildeadyouareallgoingtodietonightfilmclipyo.mp3, Fond du Lac, Wi Ascii.rtf, IMG_7276.PNG, illleaveyoualoneforevernowyoutube.mp3, IMG_4665_600mgibu.PNG, IMG_5873.PNG, IMG_5874.PNG, iluvmylife.mp4, IMG_4539.MOV, IMG_5916.PNG, IMG_5929.JPG, IMG_5936_chiliverde.PNG, IMG_6065.HEIC, vvsleepy.mp4, IMG_6066.PNG, IMG_6632.PNG, jessicasdailyaffirmationyoutube.mp3, itsasign.mp4, still life.m4a, thispokemonstreamerspent4yearstofinda1shinypokem_shiny feebas scream.mp3, One_Way_Ticket.pdf\n \nUse `cat all` to reveal the media in this folder");
             }
@@ -406,9 +388,6 @@ typeOutText("Welcome User!", () => {
             printPrompt();
             break;
           }
-
-          
-
 
         case "cd": {
           const cleanParam = param.trim();
@@ -438,7 +417,6 @@ typeOutText("Welcome User!", () => {
         let index = 0;
 
         markFolderVisited(currentDir);
-
 
         function revealNextTrack() {
           if (index >= albumFiles.length) {
@@ -504,7 +482,7 @@ typeOutText("Welcome User!", () => {
           }
 
           index++;
-          setTimeout(revealNextTrack, 400); // Delay between media
+          setTimeout(revealNextTrack, 400); 
         }
         markFolderVisited(currentDir);
 
@@ -515,7 +493,7 @@ typeOutText("Welcome User!", () => {
         printPrompt();
       }
     );
-    break; // exit early to avoid double prompt print
+    break; 
   
   }
 }
@@ -631,7 +609,7 @@ typeOutText("Welcome User!", () => {
 
     terminal.scrollTop = terminal.scrollHeight;
     index++;
-    setTimeout(revealSequentially, 350); // delay in ms between each reveal
+    setTimeout(revealSequentially, 350); 
   }
   markFolderVisited(currentDir);
 
@@ -693,7 +671,6 @@ break;
               terminal.scrollTop = terminal.scrollHeight;
               markFolderVisited(currentDir);
 
-
               video.play().catch(err => {
               console.warn("Autoplay failed:", err);
               });
@@ -745,19 +722,17 @@ break;
           break;
 
           case "echo": {
-  // Full input string after echo command
-  // e.g. "bm90ZSB0byBzZWxmOiBwYXNzd29yZCBuZWVkZWQ= | base64 -d"
+  
   const fullInput = param; 
 
-  // Split on pipe to separate the string and the pipe command
+  
   const [echoStrPart, pipePart] = fullInput.split("|").map(s => s.trim());
 
   if (pipePart === "base64 -d" || pipePart === "base64 decode") {
     try {
-      // Remove any quotes if user put them in
+      
       const cleanStr = echoStrPart.replace(/^"|"$/g, '');
-
-      // Decode base64
+      
       const decoded = atob(cleanStr);
       print(decoded);
     } catch (e) {
@@ -770,32 +745,20 @@ break;
           }
         }
   }
-    // Initial welcome text and prompt
-   // print("Welcome User!");
-   // print("FDL, WI. Population … U *shrugs*");
-   // print("Terminal" +"");
-   // print(" ");
-   // print("Use `ls` to list folders and folder contents, `cd [folder name]` to explore, `cd ..` to move up a directory, `cat [file]` to view contents, and `clear` to clear terminal");
-   // print("Some files may be encoded, locked, or require renaming to reveal their contents...");
-   // printPrompt();
-
-   // On load
+   
 typeOutText("Welcome User!", () => {
   typeOutText("FDL, WI. Population … U *shrugs*\nTerminal", () => {
-    //typeoutText(" ",()=> {
     typeOutText("\nCommands: use `ls` to list folders and folder contents, `cd [folder name]` to access folders, `cd ..` to navigate back to main directory, `cat [file]` to view contents, and `clear` to clear terminal\n", () => {
       typeOutText("Some files may be encoded, locked, or require renaming...", () => {
         setTimeout(() => {
           window.parent.postMessage({ action: 'openStickynote' }, '*');
-        }, 300);  // Delay here
+        }, 300); 
 
-        printPrompt(); // regular prompt, no typing
+        printPrompt();
       });
     });
-  //});
   });
 });
-
 
     commandInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -858,10 +821,8 @@ document.addEventListener("click", (e) => {
 window.onload = () => {
   setTimeout(() => {
     focusInput();
-  }, 300);  // 300ms delay; adjust if needed
+  }, 300);
 };
-
-
 
     }
     document.getElementById('back-button').addEventListener('click', () => {
@@ -872,6 +833,8 @@ window.onload = () => {
 window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('back-button').style.display = 'block';
   });
+
+  //who put two truths on my plate?
     
   </script>
 

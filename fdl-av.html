@@ -60,7 +60,7 @@
     position: absolute;
     top: 20px;
     left: 20px;
-    /* your other styles here */
+    
     z-index: 9999;
     padding: 10px 15px;
     background-color: black;
@@ -158,7 +158,6 @@ function showBackButton() {
 document.addEventListener('mousemove', showBackButton);
 document.addEventListener('touchstart', showBackButton);
 
-
     window.onload = () => {
       promptBox.style.display = "block";
       input.focus();
@@ -178,8 +177,7 @@ document.addEventListener('touchstart', showBackButton);
 
         setTimeout(() => {
           title.style.display = "none";
-
-          // <-- Fixed here: Use relative path, not absolute file path
+          
          // video.src = encodeURI("Fond du Lac, Wi/Fdl, Wi_AV/Fond du Lac, WI_av_v2.mp4");
 
           //video.src = "https://archive.org/download/fond-du-lac-wi-av/Fond%20du%20Lac%2C%20WI_av_v1.mp4";
@@ -208,6 +206,8 @@ document.addEventListener('touchstart', showBackButton);
 window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('back-button').style.display = 'block';
   });
+
+  //still grieving the part of me that died with u
     
   </script>
 

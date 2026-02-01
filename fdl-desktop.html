@@ -12,8 +12,6 @@
       background: black;
       font-family: 'Courier New', Courier, monospace;
       overflow: hidden;
-      /*transform-origin: top left;*/
-      /*transform: scale(.25);*/
 
 
     }
@@ -63,7 +61,7 @@
     position: absolute;
     top: 20px;
     left: 20px;
-    /* your other styles here */
+    
   }
   #session-timer {
   position: absolute;
@@ -82,10 +80,10 @@
   box-shadow: 2px 2px 8px rgba(0,0,0,0.5);
   z-index: 20;
 }
+
 #session-timer .timer-label {
   font-size: 14px;
   margin-bottom: 4px;
-  /*text-transform: uppercase;*/
   letter-spacing: 1px;
 }
 
@@ -130,15 +128,20 @@
     <span>Fond du Lac, Wi AV</span>
   </div>
 
-    <!--<div class="folder" style="top: 100px; left: 220px;" onclick="location.href='fdl-terminal.html'">-->
+    
   <div id="terminal-folder" class="folder" style="top: 100px; left: 220px;" onclick="window.location.href='fdl-terminal.html'" role="button" tabindex="0" aria-label="Open Terminal folder">
     <img src="icons8-mac-folder-48.png" alt="Folder icon for Terminal" />
     <span>Terminal</span>
   </div>
 
+ <!-- <div class="folder" style="top: 100px; left: 340px;" onclick="window.location.href='nyshow.html'" role="button" tabindex="0" aria-label="Open NY Show Flyer">
+  <img src="icons8-mac-folder-48.png" alt="Folder icon for NY Show" />
+  <span>Anseriform Viewing NY</span>
+</div> -->
+
     <div id="session-timer">
         <div class="timer-label">Trial Ends In:</div>
-        <div class="timer-countdown">00:10</div>
+        <div class="timer-countdown">loading...</div>
       </div>
 
 
@@ -149,10 +152,19 @@
   </div>
 </div>
 
-
   <button id="back-button">Back</button>
 
   <script>
+    window.EXPIRY_DATE = new Date('2025-12-17T23:59:59');
+    window.bypassed = false;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('bypassed') === '1') {
+      window.bypassed = true;
+      window.EXPIRY_DATE = new Date();
+      window.EXPIRY_DATE.setFullYear(window.EXPIRY_DATE.getFullYear() + 1);
+    }
+
     window.onload = () => {
       setTimeout(() => {
         document.getElementById('loading').style.display = 'none';
@@ -167,24 +179,19 @@
             }
           });
         }
-    
-        // NEW: Terminal folder click handler
+            
         const terminalFolder = document.getElementById('terminal-folder');
         if (terminalFolder) {
           terminalFolder.addEventListener('click', (e) => {
             e.preventDefault();
-    
-            // Tell the parent page to load the sticky note
-            console.log('CLICK detected: sending postMessage to parent');
-            //window.parent.postMessage({ action: 'openStickynote' }, '*');
-    
-            // Delay navigation slightly
-         //  setTimeout(() => {
+               
+            console.log('Click detected: sending postMessage to parent');
+                     
               window.location.href = 'fdl-terminal.html';
-          //  }, 100);
+          
           });
         } else {
-          console.warn('Terminal folder not found!');
+          console.warn('Terminal folder not found shawty');
         }
       }, 1500);
     };
@@ -197,29 +204,34 @@
         console.log('Back button clicked: sent goBack message');
       });
     } else {
-      console.warn('Back button not found!');
+      console.warn('Back button not found shordee');
     }
   });
-
-  // Listen for messages from the terminal iframe
+  
 window.addEventListener('message', (event) => {
     if (event.data.action === 'openStickynote') {
-  setTimeout(() => {
-    openStickynote();
-  }, 1500);
-}
+        setTimeout(() => {
+            openStickynote();
+        }, 1500);
+    }
 
-});
+    if (event.data.action === "updateTimerNow") {
+        updateTimer();
+    }
+}); 
 
-// Define the sticky note action
 function openStickynote() {
   
-  alert('Sticky note triggered!'); 
+  alert('Sticky note triggered shawty'); 
 }
 
-(function() {
-  const EXPIRY_DATE = new Date('2025-12-17T23:59:59'); // set your expiry date/time here (in UTC)
+let hasExpired = false;
+let countdownEl = null;
+let overlayEl = null;
+let goodbyeCSS = null;
 
+(function() {
+  
   const timerEl = document.getElementById('session-timer');
   const countdownEl = document.querySelector('#session-timer .timer-countdown');
   const overlayEl = document.getElementById('session-expired-overlay');
@@ -233,39 +245,77 @@ function openStickynote() {
     return `${days}d ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
   }
 
-  function disableDesktop() {
-    document.querySelectorAll('button, a').forEach(el => {
-      el.disabled = true;
-      el.style.pointerEvents = 'none';
-      el.style.opacity = '0.5';
-    });
-    overlayEl.style.display = 'flex';
-    window.parent.postMessage({ action: 'sessionExpired' }, '*');
-  }
-
-  function updateTimer() {
-    const now = new Date();
-    let remainingSeconds = Math.floor((EXPIRY_DATE - now) / 1000);
-
-    if (remainingSeconds <= 0) {
-      countdownEl.textContent = "00:00:00:00";
-      disableDesktop();
-      clearInterval(interval);
-      return;
+    function disableDesktop() {
+      if (bypassed) return; 
+      document.querySelectorAll('button, a').forEach(el => {
+        el.disabled = true;
+        el.style.pointerEvents = 'none';
+        el.style.opacity = '0.5';
+      });
+      overlayEl.style.display = 'flex';
+      window.parent.postMessage({ action: 'sessionExpired' }, '*');
     }
 
-    countdownEl.textContent = formatTime(remainingSeconds);
+function updateTimer() {
+  if (!countdownEl || !overlayEl) return;
+
+  if (window.bypassed) { 
+    countdownEl.textContent = "∞";
+    overlayEl.style.display = "none";
+    return;
   }
 
-  // Run once immediately to handle expired case right away
-  updateTimer();
+  const now = new Date();
+  let remainingSeconds = Math.floor((window.EXPIRY_DATE - now) / 1000);
 
-  // Then keep ticking every second
-  const interval = setInterval(updateTimer, 1000);
-})();
+  if (remainingSeconds <= 0) {
+    hasExpired = true;
+    countdownEl.textContent = "00:00:00:00";
+    disableDesktop();
+    clearInterval(window.sessionTimerInterval);
+    return;
+  }
 
+  countdownEl.textContent = formatTime(remainingSeconds);
+}
 
+    updateTimer();
+    window.sessionTimerInterval = setInterval(updateTimer, 1000);
 
+    window.addEventListener("message", (event) => {
+  if (event.data.action === "bypassExpiry") {
+    bypassed = true;
+    hasExpired = false;
+
+    if (overlayEl) overlayEl.style.display = "none";
+    if (countdownEl) countdownEl.textContent = "∞";
+
+    clearInterval(window.sessionTimerInterval);
+
+    console.log("Expiry bypassed via res");
+  }
+});
+
+  })();
+
+function resurrect() {
+    console.log("Resurrection triggered");
+
+    if (window.sessionTimerInterval) {
+      clearInterval(window.sessionTimerInterval);
+    }
+
+    if (window.showIframe && window.removeIframeAndStickyNote) {
+        window.removeIframeAndStickyNote();
+        bypassed = true;
+        overlayEl.style.display = "none";
+        EXPIRY_DATE = new Date();
+        EXPIRY_DATE.setFullYear(EXPIRY_DATE.getFullYear() + 1);
+        console.log("Resurrected! New expiry:", EXPIRY_DATE.toISOString());
+        window.showIframe();
+    }
+}
+//i hope ur happy, and i hope i never see it
     </script>
     
     

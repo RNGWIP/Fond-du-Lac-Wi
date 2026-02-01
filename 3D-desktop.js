@@ -6,10 +6,6 @@ import { CSS3DRenderer, CSS3DObject } from './3js_material/CSS3DRenderer.js';
 
 console.log('Init started');
 
-
-
-
-
 let scene, camera, renderer, cssRenderer, controls;
 let raycaster, mouse;
 let powerButtonMesh = null;
@@ -20,52 +16,52 @@ let screenPlaceholderMesh = null;
 let screenPlaceholderRoot = null;
 let cssObject = null;
 let stickyNoteObject = null;
-
-//let placeholderAspectratio = 1.6; // fallback default
-
+let EXPIRY_DATE = null;
+let bypassed = false;
 
 init();
 animate();
 window.addEventListener('message', (event) => {
-    console.log('PARENT PAGE RECEIVED postMessage:', event.data);
-    if (event.data && event.data.action === 'sessionExpired') {
-        console.log('Received sessionExpired message');
-        startSessionFadeOut();
-      }
-      
-    
-    if (event.data && event.data.action === 'openStickynote') {
-      console.log('Message received from iframe: adding sticky note!');
-      addStickynote();
+  console.log('Parent page received postMessage:', event.data);
+
+  if (
+    event.data &&
+    event.data.action === 'sessionExpired' &&
+    !bypassed
+  ) {
+    console.log('Received sessionExpired (not resurrected)');
+    startSessionFadeOut();
+  }
+  if (event.data && event.data.action === 'openStickynote') {
+    console.log('Message received from iframe: adding sticky note!');
+    addStickynote();
+  }
+  if (event.data && event.data.action === 'goBack') {
+    console.log('Message received: remove sticky note only!');
+    if (stickyNoteObject) {
+      scene.remove(stickyNoteObject);
+      stickyNoteObject = null;
+      console.log('Removed sticky note from scene.');
     }
-    if (event.data && event.data.action === 'goBack') {
-        console.log('Message received: remove sticky note only!');
-        if (stickyNoteObject) {
-          scene.remove(stickyNoteObject);
-          stickyNoteObject = null;
-          console.log('Removed sticky note from scene.');
-        }
-        // DO NOT remove iframe here; leave it intact
-      }
-      
-  });
-  
+  }
+  if (event.data && event.data.action === "summonPassword") {
+    summonPasswordPrompt();
+  }
+});
 
 function init() {
   console.log('Init function running');
 
-  // Scene
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000000);
 
-  // Camera
   camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.001, 100);
 
   camera.position.set(7.5, 5.5, 4);
   console.log('Camera position:', camera.position);
 
 
-// CSS3DRenderer
+
 cssRenderer = new CSS3DRenderer();
 cssRenderer.setSize(window.innerWidth, window.innerHeight);
 cssRenderer.domElement.style.position = 'absolute';
@@ -73,24 +69,19 @@ cssRenderer.domElement.style.top = '0';
 cssRenderer.domElement.style.left = '0';
 document.body.appendChild(cssRenderer.domElement);
 cssRenderer.domElement.style.pointerEvents = 'none';
-cssRenderer.domElement.style.zIndex = '10'; // ensures iframe is above canvas
+cssRenderer.domElement.style.zIndex = '10'; 
 
-  // Renderer
   renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
   console.log('Renderer initialized');
 
-
-
-  // Controls
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
-  controls.target.set(7.5, 5.5, 4);  // match your scene's focus point
+  controls.target.set(7.5, 5.5, 4);
 controls.update();
-
-  // Lights
+ 
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
   scene.add(ambientLight);
 
@@ -102,21 +93,15 @@ controls.update();
   pointLight.position.set(2, 3, 4);
   scene.add(pointLight);
 
-  // Helpers
+  
   const gridHelper = new THREE.GridHelper(1000, 1000);
   scene.add(gridHelper);
-
-  //const axesHelper = new THREE.AxesHelper(5);
-  //scene.add(axesHelper);
-
-  // Raycaster setup
+  
   raycaster = new THREE.Raycaster();
   mouse = new THREE.Vector2();
-
-  // Loader
+  
   const loader = new GLTFLoader();
-
-  // Load computer base
+  
   loader.load(
     './Computer3dAssets/computer.glb',
     (gltf) => {
@@ -128,8 +113,7 @@ controls.update();
       console.error('Error loading computer:', error);
     }
   );
-
-  // Load power button
+  
   loader.load(
     './Computer3dAssets/powerbutton.glb',
     (gltf) => {
@@ -143,13 +127,11 @@ controls.update();
     }
   );
 
-  // Load screen (dark)
   loader.load(
     './Computer3dAssets/screen2.glb',
     (gltf) => {
       screenMesh = gltf.scene;
-  
-      // Make all meshes in the screen purely black and non-reflective
+        
       screenMesh.traverse((child) => {
         if (child.isMesh) {
           child.material = new THREE.MeshBasicMaterial({ color: 0x000000 });
@@ -162,15 +144,13 @@ controls.update();
     undefined,
     (error) => console.error('Error loading screen:', error)
   );
-  
-  
+    
   loader.load('./Computer3dAssets/screenPlaceholder2.glb', (gltf) => {
-    // Load entire scene
+    
     screenPlaceholderRoot = gltf.scene;
     screenPlaceholderRoot.visible = false;
     scene.add(screenPlaceholderRoot);
-  
-    // Find mesh inside scene
+      
     screenPlaceholderMesh = null;
     screenPlaceholderRoot.traverse((child) => {
       if (child.isMesh) {
@@ -181,29 +161,21 @@ controls.update();
   
     if (!screenPlaceholderMesh) {
       console.warn('No mesh found inside screenPlaceholder2.glb');
-      return;
-
-
-      
+      return;     
     }
-  
-    // Compute bounding box of the mesh geometry
+      
     screenPlaceholderMesh.geometry.computeBoundingBox();
     const bbox = screenPlaceholderMesh.geometry.boundingBox;
-  
-    // Log bounding box size (real size of mesh in world units)
+     
     const size = new THREE.Vector3();
     bbox.getSize(size);
     console.log('Mesh bounding box size (width, height, depth):', size);
-  
-    // Get center of bounding box in local space
+      
     const localCenter = new THREE.Vector3();
     bbox.getCenter(localCenter);
-  
-    // Update world matrix to get accurate world position
+      
     screenPlaceholderMesh.updateWorldMatrix(true, false);
-  
-    // Transform local center to world position
+    
     const worldCenter = localCenter.clone().applyMatrix4(screenPlaceholderMesh.matrixWorld);
     console.log('Mesh center in world space:', worldCenter);
   
@@ -212,11 +184,7 @@ controls.update();
   }, undefined, (error) => {
     console.error('Error loading screenPlaceholder2:', error);
   });
-  
-  
-
-
-  // Event listeners
+    
   window.addEventListener('resize', onWindowResize, false);
   window.addEventListener('click', onClick, false);
 
@@ -246,11 +214,6 @@ testDiv.textContent = "HELLO";
 testDiv.style.background = "red";
 testDiv.style.width = "200px";
 testDiv.style.height = "100px";
-
-//const testObject = new CSS3DObject(testDiv);
-//testObject.position.set(0, 2, 2);
-//scene.add(testObject);
-
 }
 
 function startZoom() {
@@ -278,16 +241,14 @@ function startZoom() {
         console.log('Zoom complete');
         showIframe();
       }
-    }
-  
+    } 
     animateZoom();
   }
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-
-function showIframe() {
-  // Remove previous CSS3DObjects
+window.showIframe = function (resurrecting) {
+  
   scene.children = scene.children.filter(child => !(child instanceof CSS3DObject));
 
 if (isSafari) {
@@ -305,8 +266,6 @@ if (isSafari) {
   overlay.style.justifyContent = 'center';
   overlay.style.alignItems = 'center';
   overlay.style.textAlign = 'center';
- // overlay.style.padding = '20px';
-
   overlay.innerHTML = `
     <div style="
       max-width: 600px;
@@ -319,26 +278,19 @@ if (isSafari) {
     </div>
   `;
 
-  
-
-  
-
   document.body.appendChild(overlay);
   throw new Error("Safari not supported.");
 }
 
-
   const iframe = document.createElement('iframe');
-  iframe.src = 'fdl-desktop.html';
+  iframe.src = resurrecting ? 'fdl-desktop.html?bypassed=1' : 'fdl-desktop.html';
   iframe.style.width = '1244px';
   iframe.style.height = '765px';
   iframe.style.border = 'none';
   iframe.style.pointerEvents = 'auto';
   iframe.style.position = 'absolute';
 
-  cssObject = new CSS3DObject(iframe);
-
-  // PLACE AT ORIGIN
+  cssObject = new CSS3DObject(iframe);  
   cssObject.position.set(0, 2.080819845199585, .38106998801231384);
   cssObject.rotation.set(0, 0, 0);
   cssObject.scale.set(.0019671403120505376, .0017993858481989026, .002);
@@ -366,18 +318,10 @@ function updateIframeVisibility() {
       const dot = normal.dot(toCamera);
       cssObj.element.style.display = dot > 0 ? 'block' : 'none';
     };
-  
     checkVisibility(cssObject);
-    checkVisibility(stickyNoteObject);
-    //checkVisibility(lockScene);
+    checkVisibility(stickyNoteObject);   
   }
   
-    
-  
-  
-  
-  
-
 function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -393,14 +337,12 @@ function animate() {
 
   updateIframeVisibility();
 }
-
 window.addEventListener('keydown', (e) => {
     if (e.key === 'p') {
       console.log('Camera position:', camera.position);
       console.log('Camera lookAt target:', controls.target);
     }
   });
-  
 
 function startIntroCameraAnimation() {
     const start = camera.position.clone();
@@ -412,7 +354,7 @@ function startIntroCameraAnimation() {
       const elapsed = performance.now() - startTime;
       const t = Math.min(elapsed / duration, 1);
       camera.position.lerpVectors(start, end, t);
-      //camera.lookAt(0, 1, 0);
+      
       controls.target.set(0, 1.5, 0);
   
       if (t < 1) {
@@ -421,7 +363,6 @@ function startIntroCameraAnimation() {
         enablePowerButtonBlink();
       }
     }
-  
     animateIntro();
   }
   
@@ -432,8 +373,7 @@ function startIntroCameraAnimation() {
       console.warn('Power button mesh not loaded yet.');
       return;
     }
-  
-    // Gather all materials
+   
     blinkingMaterials = [];
     powerButtonMesh.traverse((child) => {
       if (child.isMesh && child.material) {
@@ -489,24 +429,22 @@ function startIntroCameraAnimation() {
     noteDiv.style.boxSizing = 'border-box';
   
     const stickyNote = new CSS3DObject(noteDiv);
-    stickyNote.position.set(1.2, 2.63, 0.5);  // adjust position in front of screen
+    stickyNote.position.set(1.2, 2.63, 0.5);  
     stickyNote.rotation.set(0, 0, -.33);
-    stickyNote.scale.set(0.002, 0.002, 0.002);  // adjust scale to match your scene
+    stickyNote.scale.set(0.002, 0.002, 0.002);  
   
     stickyNoteObject = stickyNote;
     scene.add(stickyNoteObject);
-
-  
+ 
     console.log('Sticky note added as CSS3DObject with text!');
   }
   
-  function removeIframeAndStickyNote() {
+  window.removeIframeAndStickyNote = function() {
     if (cssObject) {
       scene.remove(cssObject);
       cssObject = null;
-      console.log('Removed iframe from scene.');
     }
-  
+
     if (stickyNoteObject) {
       scene.remove(stickyNoteObject);
       stickyNoteObject = null;
@@ -516,27 +454,23 @@ function startIntroCameraAnimation() {
 
   function startSessionFadeOut() {
     console.log('Starting fade-out sequence...');
-  
-    // 1. Gather objects to fade out
     let fadeOutObjects = [];
     scene.traverse((obj) => {
       if (obj.isMesh) fadeOutObjects.push(obj);
     });
     if (cssObject) fadeOutObjects.push(cssObject);
     if (stickyNoteObject) fadeOutObjects.push(stickyNoteObject);
-  
-    // Timing configuration
-    const initialPause = 3000;     // wait BEFORE starting fadeout
-    const fadeOutDuration = 2000;  // fade out time
-    const blackoutPause = 1500;    // pause on black before goodbye
-    const fadeInDuration = 2000;   // fade in goodbye text
-  
-    // NEW STEP: wait before *starting* the fade-out
+ 
+    const initialPause = 3000;     
+    const fadeOutDuration = 2000;
+    const blackoutPause = 1500;  
+    const fadeInDuration = 2000; 
+      
     setTimeout(() => {
       console.log('Initial pause complete. Beginning fade-out.');
-  
+
       const fadeOutStartTime = performance.now();
-  
+
       function fadeOutStep() {
         if (screenMesh) {
             screenMesh.visible = false;
@@ -558,11 +492,9 @@ function startIntroCameraAnimation() {
         if (t < 1) {
           requestAnimationFrame(fadeOutStep);
         } else {
-          // Fully faded out, remove from scene
           fadeOutObjects.forEach(obj => scene.remove(obj));
           console.log('Fade-out complete. Blackout pause begins.');
   
-          // Pause on black screen
           setTimeout(() => {
             fadeInGoodbyeText();
           }, blackoutPause);
@@ -571,8 +503,7 @@ function startIntroCameraAnimation() {
   
       requestAnimationFrame(fadeOutStep);
     }, initialPause);
-  
-    // Function to show and fade in the goodbye message
+    
     function fadeInGoodbyeText() {
       showGoodbyeMessage();
   
@@ -583,9 +514,8 @@ function startIntroCameraAnimation() {
         const t = Math.min(elapsed / fadeInDuration, 1);
   
         if (goodbyeCSS) {
-          goodbyeCSS.element.style.opacity = t;
+          goodbyeCSS.element.style.opacity = t;  
         }
-  
         if (t < 1) {
           requestAnimationFrame(fadeInStep);
         } else {
@@ -596,41 +526,111 @@ function startIntroCameraAnimation() {
       requestAnimationFrame(fadeInStep);
     }
   }
-  
-  
+
+
+
   let goodbyeCSS = null;
 
   function showGoodbyeMessage() {
     const goodbyeDiv = document.createElement('div');
-    goodbyeDiv.innerHTML = `
-      <div style="
-        color: #0f0;
-        font-size: 32px;
-        font-family: 'Courier New', Courier, monospace;
-        text-align: center;
-        width: 400px;
-      ">
-        goodbye forever now...
-      </div>
-    `;
-    goodbyeDiv.style.opacity = '0'; // start fully transparent
+goodbyeDiv.innerHTML = `
+  <div id="goodbye-text" style="
+    color: #0f0;
+    font-size: 32px;
+    font-family: 'Courier New', Courier, monospace;
+    text-align: center;
+    width: 400px;
+    position: relative;
+    user-select: none;
+  ">
+    good<span data-letter="b">b</span>ye f<span data-letter="o">o</span>rever n<span data-letter="o">o</span>w...
+  </div>
+`;
+
+    goodbyeDiv.style.opacity = '0';
     goodbyeDiv.style.background = 'transparent';
     goodbyeDiv.style.pointerEvents = 'none';
   
     goodbyeCSS = new CSS3DObject(goodbyeDiv);
-  
-    // Position the text where the screen would be
-    goodbyeCSS.position.set(0, 2.08, 0.381); // Same as iframe
+    goodbyeCSS.element.style.pointerEvents = "auto";
+
+    goodbyeCSS.position.set(0, 2.08, 0.381);
     goodbyeCSS.rotation.set(0, 0, 0);
     goodbyeCSS.scale.set(0.002, 0.002, 0.002);
   
     scene.add(goodbyeCSS);
-  
-    console.log('Goodbye message added to scene.');
-  }
-  
-  
-  
+    
+let ritual = [];
+const target = ["b","o","o"];
+
+const letters = goodbyeDiv.querySelectorAll("[data-letter]");
+letters.forEach(el => {
+  el.style.pointerEvents = "auto";        
+  el.style.cursor = "default";           
+  el.style.background = "rgba(0,0,0,0)"; 
+  el.addEventListener("click", () => {
+    const l = el.dataset.letter;
+    ritual.push(l);
+    
+    for (let i = 0; i < ritual.length; i++) {
+      if (ritual[i] !== target[i]) {
+        ritual = [];
+        return;
+      }
+    }
+    if (ritual.length === 3) {
+      ritual = [];
+      summonPasswordPrompt();
+    }
+  });
+});
+
+function summonPasswordPrompt() {
+  const promptDiv = document.createElement("div");
+  promptDiv.style.position = "fixed";
+  promptDiv.style.top = "50%";
+  promptDiv.style.left = "50%";
+  promptDiv.style.transform = "translate(-50%, -50%)";
+  promptDiv.style.background = "black";
+  promptDiv.style.color = "#0f0";
+  promptDiv.style.padding = "20px";
+  promptDiv.style.border = "1px solid #0f0";
+  promptDiv.style.fontFamily = "Courier New, monospace";
+  promptDiv.style.fontSize = "16px";
+  promptDiv.style.zIndex = "9999";
+  promptDiv.style.display = "flex";
+  promptDiv.style.flexDirection = "column";
+  promptDiv.style.alignItems = "center";
+
+  const input = document.createElement("input");
+  input.type = "password";
+  input.placeholder = "Enter password";
+  input.style.background = "black";
+  input.style.color = "#0f0";
+  input.style.border = "1px solid #0f0";
+  input.style.fontFamily = "Courier New, monospace";
+  input.style.fontSize = "16px";
+  input.style.padding = "8px";
+  input.style.marginTop = "10px";
+  input.style.width = "300px";
+
+  promptDiv.appendChild(input);
+  document.body.appendChild(promptDiv);
+
+  setTimeout(() => input.focus(), 50);
+
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      if (input.value.trim() === "oh, it's been forever hasn't it...") {
+        document.body.removeChild(promptDiv);
+        window.resurrect();
+      } else {
+        input.value = "";
+      }
+    }
+  });
+}
+}
   //.0019671403120505376, .0017993858481989026, .002
   window.addEventListener('keydown', (e) => {
     if (e.key === 'r' && e.shiftKey) {
@@ -638,7 +638,18 @@ function startIntroCameraAnimation() {
       removeIframeAndStickyNote();
     }
   });
-    
-  
-  
-  
+
+window.resurrect = function () {
+  console.log("Resurrection triggered");
+
+  bypassed = true;
+
+  if (window.removeIframeAndStickyNote) {
+    window.removeIframeAndStickyNote();
+  }
+  if (window.showIframe) {
+    window.showIframe(true);
+  }
+  console.log("Resurrection complete");
+};
+//let go (easier said than done lmfao)
